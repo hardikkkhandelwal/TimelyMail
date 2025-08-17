@@ -44,6 +44,8 @@ android {
             excludes.add("META-INF/NOTICE")
             excludes.add("META-INF/NOTICE.txt")
             excludes.add("META-INF/NOTICE.md")
+
+            excludes.add("mozilla/public-suffix-list.txt")
         }
     }
 
@@ -65,6 +67,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.0.0")
@@ -87,10 +90,13 @@ dependencies {
     implementation(libs.googleid)
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.firebase.crashlytics.buildtools)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
 }
+

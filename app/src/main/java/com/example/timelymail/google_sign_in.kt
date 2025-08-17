@@ -7,41 +7,27 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ProgressBar
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.credentials.ClearCredentialStateRequest
-import androidx.credentials.Credential
-import androidx.credentials.CredentialManager
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.ClearCredentialException
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.auth.GoogleAuthUtil
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.api.services.gmail.GmailScopes
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.auth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.withContext
 
 class google_sign_in : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var credentialManager: CredentialManager
     private lateinit var googleSignInClient: GoogleSignInClient
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,67 +35,23 @@ class google_sign_in : AppCompatActivity() {
         installSplashScreen()
         setContentView(R.layout.activity_google_sign_in)
 
+        auth = FirebaseAuth.getInstance()
+
+        // Setup progress bars
         val progressBar1 = findViewById<ProgressBar>(R.id.progressBar1)
         val progressBar2 = findViewById<ProgressBar>(R.id.progressBar2)
-
         progressBar1.max = 1000
         progressBar2.max = 1000
+        startProgressAnimation(progressBar1, progressBar2)
 
-        val currentProgress = 1000
-
-        fun startProgressAnimation() {
-            progressBar1.progress = 0
-            progressBar2.progress = 0
-
-            val anim1 = ObjectAnimator.ofInt(progressBar1, "progress", currentProgress)
-            anim1.duration = 5000
-
-            val anim2 = ObjectAnimator.ofInt(progressBar2, "progress", currentProgress)
-            anim2.duration = 5000
-
-            anim1.doOnEnd {
-                anim2.start()
-            }
-
-            anim2.doOnEnd {
-                // Restart the whole cycle
-                startProgressAnimation()
-            }
-
-            anim1.start()
-        }
-
-        startProgressAnimation()
-
-
-        // Initialize Firebase Auth
-        auth = Firebase.auth
-
-        // Initialize Credential Manager
-        credentialManager = CredentialManager.create(this)
-
-        // Google ID Option
-        val googleIdOption = GetGoogleIdOption.Builder()
-            .setServerClientId(getString(R.string.clientid))
-            .setFilterByAuthorizedAccounts(false)
-            .build()
-
+        // Google Sign-In options
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
-            .requestScopes(Scope("https://www.googleapis.com/auth/gmail.readonly")) // Required
+            .requestScopes(Scope(GmailScopes.GMAIL_READONLY))
             .requestIdToken(getString(R.string.default_web_client_id))
             .build()
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
-
-
-
-
-        // Credential Request
-        val request = GetCredentialRequest.Builder()
-            .addCredentialOption(googleIdOption)
-            .build()
-
 
         val btnCreateGoogleAC = findViewById<Button>(R.id.btnCreateGoogleAC)
         btnCreateGoogleAC.setOnClickListener {
@@ -118,29 +60,41 @@ class google_sign_in : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Button click listener — INSIDE onCreate
         val signInButton = findViewById<Button>(R.id.btnGoogleSignIn)
         signInButton.setOnClickListener {
             lifecycleScope.launch {
                 try {
-                    // This line ensures previous account is signed out so chooser appears again
                     googleSignInClient.signOut().addOnCompleteListener {
-                        val signInIntent = googleSignInClient.signInIntent
-                        startActivityForResult(signInIntent, 1001)
+                        startActivityForResult(googleSignInClient.signInIntent, 1001)
                     }
                 } catch (e: Exception) {
                     Log.e("TAG", "Sign-in failed: ${e.localizedMessage}")
                 }
             }
         }
+    }
 
+    private fun startProgressAnimation(pb1: ProgressBar, pb2: ProgressBar) {
+        val currentProgress = 1000
+        pb1.progress = 0
+        pb2.progress = 0
+
+        val anim1 = ObjectAnimator.ofInt(pb1, "progress", currentProgress)
+        anim1.duration = 5000
+        val anim2 = ObjectAnimator.ofInt(pb2, "progress", currentProgress)
+        anim2.duration = 5000
+
+        anim1.doOnEnd { anim2.start() }
+        anim2.doOnEnd { startProgressAnimation(pb1, pb2) }
+        anim1.start()
     }
 
     override fun onStart() {
         super.onStart()
-        // Check if user is signed in (non-null) and update UI accordingly.
         val currentUser = auth.currentUser
-        updateUI(currentUser)
+        if (currentUser != null) {
+            handleSignedInUser(currentUser)
+        }
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
@@ -148,83 +102,70 @@ class google_sign_in : AppCompatActivity() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    Log.d("TAG", "signInWithCredential:success")
                     val user = auth.currentUser
-                    updateUI(user)
+                    if (user != null) handleSignedInUser(user)
                 } else {
-                    // If sign in fails, display a message to the user
-                    Log.w("TAG", "signInWithCredential:failure", task.exception)
-                    updateUI(null)
+                    Log.e("TAG", "signInWithCredential:failure", task.exception)
                 }
             }
     }
 
-    private fun signOut() {
-        // Firebase sign out
-        auth.signOut()
+    private fun handleSignedInUser(user: FirebaseUser) {
+        val account = GoogleSignIn.getLastSignedInAccount(this)
+        if (account != null) {
+            val email = account.email ?: account.account?.name ?: return
+            val photoUrl = account.photoUrl
 
-        // When a user signs out, clear the current user credential state from all credential providers.
-        lifecycleScope.launch {
-            try {
-                val clearRequest = ClearCredentialStateRequest()
-                credentialManager.clearCredentialState(clearRequest)
-                updateUI(null)
-            } catch (e: ClearCredentialException) {
-                Log.e("TAG", "Couldn't clear user credentials: ${e.localizedMessage}")
+            // Add account to AccountManager
+            val signedInAccount = SignedInAccount(
+                email = email,
+                photoUrl = photoUrl,
+                firebaseUser = user,
+                googleAccount = account
+            )
+
+            if (AccountManager.signedInAccounts.none { it.email == email }) {
+                AccountManager.signedInAccounts.add(signedInAccount)
             }
-        }
-    }
+            AccountManager.currentAccount = signedInAccount
 
+            saveAccountsToPrefs()
 
+            // Fetch token
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val accessToken = GoogleAuthUtil.getToken(
+                        this@google_sign_in,
+                        email,
+                        "oauth2:${GmailScopes.GMAIL_READONLY}"
+                    )
+                    Log.d("AccessToken", accessToken)
+                } catch (e: Exception) {
+                    Log.e("TokenError", "Failed to get token", e)
+                }
+            }
 
-    private fun handleSignIn(credential: Credential) {
-        // Check if credential is of type Google ID
-        if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-            // Create Google ID Token
-            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-
-            // Sign in to Firebase with using the token
-            firebaseAuthWithGoogle(googleIdTokenCredential.idToken)
-        } else {
-            Log.w("TAG", "Credential is not of type Google ID!")
-        }
-    }
-    private fun updateUI(user: FirebaseUser?) {
-        if (user != null) lifecycleScope.launch {
-            val token = getAccessToken()
-            val intent = Intent(this@google_sign_in, ProfileActivity::class.java)
-            intent.putExtra("email", user.email)
-            intent.putExtra("token", token)
+            // Move to ProfileActivity with all data
+            val intent = Intent(this, ProfileActivity::class.java)
             startActivity(intent)
             finish()
         }
-        else {
-            Log.d("TAG", "User not logged in.")
-        }
     }
 
-    private suspend fun getAccessToken(): String? {
-        val account = com.google.android.gms.auth.api.signin.GoogleSignIn.getLastSignedInAccount(this)
-        return try {
-            account?.let {
-                val accountName = it.email ?: it.account?.name
-                if (accountName != null) {
-                    com.google.android.gms.auth.GoogleAuthUtil.getToken(
-                        this,
-                        accountName,
-                        "oauth2:${GmailScopes.GMAIL_READONLY}"
-                    )
-                } else {
-                    Log.e("TAG", "No valid account name found.")
-                    null
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("TAG", "Error getting access token: ${e.message}")
-            null
-        }
+    private fun saveAccountsToPrefs() {
+        val prefs = getSharedPreferences("accounts", MODE_PRIVATE)
+        val editor = prefs.edit()
+        val gson = com.google.gson.Gson()
+        val json = gson.toJson(AccountManager.signedInAccounts.map {
+            mapOf(
+                "email" to it.email,
+                "photoUrl" to it.photoUrl?.toString()
+            )
+        })
+        editor.putString("accounts_list", json)
+        editor.apply()
     }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 1001) {
@@ -237,5 +178,4 @@ class google_sign_in : AppCompatActivity() {
             }
         }
     }
-
 }

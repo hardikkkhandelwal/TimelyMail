@@ -47,6 +47,8 @@ class ProfileActivity : AppCompatActivity() {
         val googleIcon = findViewById<ImageView>(R.id.googleIcon)
         val notifyIcon = findViewById<ImageButton>(R.id.notifyIcon)
         val searchIcon = findViewById<ImageButton>(R.id.searchIcon)
+        val toolbarTitle = findViewById<TextView>(R.id.toolbarTitle)
+
 
 
 
@@ -135,12 +137,13 @@ class ProfileActivity : AppCompatActivity() {
             .replace(R.id.fragment_container, InboxFragment())
             .commit()
 
-        bottomNav.setOnNavigationItemSelectedListener {
-            when (it.itemId) {
+        bottomNav.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
                 R.id.nav_mail -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, InboxFragment())
                         .commit()
+                    toolbarTitle.text = "Inbox" // <-- update title
                     true
                 }
 
@@ -148,12 +151,14 @@ class ProfileActivity : AppCompatActivity() {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, CalendarFragment())
                         .commit()
+                    toolbarTitle.text = "Calendar" // <-- update title
                     true
                 }
 
                 else -> false
             }
         }
+
 
         val composeFab = findViewById<FloatingActionButton>(R.id.composeFab)
         composeFab.setOnClickListener {
