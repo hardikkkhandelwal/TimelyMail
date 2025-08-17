@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Primary items -->
+    <group android:id="@+id/top_group">
+        <item android:id="@+id/nav_inbox" android:title="Inbox" android:icon="@drawable/ic_inbox" />
+        <item android:id="@+id/nav_archive" android:title="Archive" android:icon="@drawable/ic_archive" />
+        <item android:id="@+id/nav_sent" android:title="Sent" android:icon="@drawable/ic_sent" />
+    </group>
+
+    <!-- Divider automatically added between groups -->
+
+    <!-- Bottom items -->
+    <group android:id="@+id/bottom_group">
+        <item android:id="@+id/nav_add_account" android:icon="@drawable/ic_add" />
+        <item android:id="@+id/nav_help" android:icon="@drawable/ic_help" />
+        <item android:id="@+id/nav_settings" android:icon="@drawable/ic_settings" />
+    </group>
+
+</menu>

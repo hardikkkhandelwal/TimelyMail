@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "368812676183",
+    "project_id": "timelymail-dca3f",
+    "storage_bucket": "timelymail-dca3f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:368812676183:android:0aa07c4dc2289897887f12",
+        "android_client_info": {
+          "package_name": "com.example.timelymail"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "368812676183-dhi94pkfgg60tn1km9vsoc4k3no9v2gq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.timelymail",
+            "certificate_hash": "9dfd98ebde387c88c799bf27dd93f53f223ecc48"
+          }
+        },
+        {
+          "client_id": "368812676183-pl6cqmgdo2ji6sm6ooiu5rkvugrvqnsp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZs9ZVAB6pwsLNQRzj25Pu_BwcPgXNEl8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "368812676183-pl6cqmgdo2ji6sm6ooiu5rkvugrvqnsp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

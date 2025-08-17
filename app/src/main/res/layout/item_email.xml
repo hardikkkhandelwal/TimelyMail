@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="72dp"
+    android:padding="12dp">
+
+    <!-- Avatar -->
+    <TextView
+        android:id="@+id/avatarText"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:text="T"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:background="@drawable/circle_background"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true" />
+
+    <!-- Sender Name -->
+    <TextView
+        android:id="@+id/senderText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/avatarText"
+        android:layout_marginStart="12dp"
+        android:text="ToloTolo"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF" />
+
+    <!-- Date -->
+    <TextView
+        android:id="@+id/dateText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@id/senderText"
+        android:text="Aug 6"
+        android:textSize="12sp"
+        android:textColor="#BBBBBB" />
+
+    <!-- Subject -->
+    <TextView
+        android:id="@+id/subjectText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/senderText"
+        android:layout_toEndOf="@id/avatarText"
+        android:layout_marginStart="12dp"
+        android:text="You got FREE BIKE RIG - Blender - v1.0!"
+        android:textSize="14sp"
+        android:textColor="#FFFFFF"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <!-- Snippet -->
+    <TextView
+        android:id="@+id/snippetText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/subjectText"
+        android:layout_toEndOf="@id/avatarText"
+        android:layout_marginStart="12dp"
+        android:text="Aug 6, 2025 $0 FREE BIKE RIG – Blender – v1.0!"
+        android:textSize="13sp"
+        android:textColor="#AAAAAA"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+</RelativeLayout>

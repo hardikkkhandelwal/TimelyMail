@@ -1,0 +1,16 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.TimelyMail" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+<!--         <item name="colorPrimary">@color/black</item>-->
+    </style>
+
+    <style name="Theme.TimelyMail" parent="Base.Theme.TimelyMail" />
+
+    <style name="Theme.App.Splash_Screen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_Black</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo_timely</item>
+        <item name="postSplashScreenTheme">@style/Base.Theme.TimelyMail</item>
+
+    </style>
+</resources>

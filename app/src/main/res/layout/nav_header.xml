@@ -1,0 +1,349 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="@android:color/white">
+
+    <!-- LEFT ICON SECTION -->
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:padding="16dp">
+
+        <!-- Top Icons (Google and Plus) -->
+        <LinearLayout
+            android:id="@+id/topSection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentTop="true">
+
+            <ImageView
+                android:id="@+id/profileImageView"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/icon_google"
+                android:contentDescription="Google Icon" />
+
+            <ImageView
+                android:id="@+id/addAccountIcon"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginTop="25dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_add" />
+
+        </LinearLayout>
+
+        <!-- Bottom Icons (Help and Settings) -->
+        <LinearLayout
+            android:id="@+id/bottomSection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical"
+            android:layout_centerHorizontal="true"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/helpIcon"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginBottom="26dp"
+                android:src="@drawable/ic_help"
+                android:contentDescription="Help" />
+
+            <ImageView
+                android:id="@+id/settingsIcon"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:src="@drawable/ic_settings"
+                android:contentDescription="Settings" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <!-- RIGHT SECTION (EMAIL, INBOX, ETC.) -->
+    <RelativeLayout
+        android:layout_width="210dp"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:background="#F5F5F5">
+
+        <!-- Main Content Holder -->
+        <LinearLayout
+            android:id="@+id/emailSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Google"
+                android:textSize="25dp"
+                android:textColor="#000000"/>
+
+            <TextView
+                android:id="@+id/emailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="yourmail@gmail.com"
+                android:textSize="12dp"
+                android:textColor="#000000"
+                android:paddingBottom="12dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="8dp"
+                android:layout_marginBottom="25dp"
+                android:background="?android:attr/selectableItemBackground">
+
+                <!-- Label -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Favorites"
+                    android:textSize="15dp"
+                    android:textColor="#000000"
+                    />
+
+                <!-- Badge -->
+                <TextView
+                    android:id="@+id/favBtn"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_marginStart="100dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp"
+                    android:gravity="center"
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/ic_pencil"
+                    />
+            </LinearLayout>
+
+
+
+
+            <LinearLayout
+                android:id="@+id/inboxItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="8dp"
+                android:layout_marginBottom="15dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground">
+
+                <!-- Icon -->
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_marginEnd="12dp"
+                    android:src="@drawable/ic_inbox"
+                    android:contentDescription="Inbox Icon" />
+
+                <!-- Label -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Inbox"
+                    android:textSize="15sp"
+                    android:textColor="#000000" />
+
+                <!-- Badge -->
+                <TextView
+                    android:id="@+id/inboxCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="9"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10sp"
+                    android:background="@drawable/bg_badge" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/archItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="8dp"
+                android:layout_marginBottom="15dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground">
+
+                <!-- Icon -->
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_marginEnd="12dp"
+                    android:src="@drawable/ic_archive"
+                    android:contentDescription="Inbox Icon" />
+
+                <!-- Label -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Archive"
+                    android:textSize="15sp"
+                    android:textColor="#000000" />
+
+                <!-- Badge -->
+                <TextView
+                    android:id="@+id/archCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="9"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10sp"
+                    android:background="@drawable/bg_badge" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/draftItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="8dp"
+                android:layout_marginBottom="15dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground">
+
+                <!-- Icon -->
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_marginEnd="12dp"
+                    android:src="@drawable/ic_draft"
+                    android:contentDescription="Draft Icon" />
+
+                <!-- Label -->
+                <TextView
+                    android:id="@+id/nav_drafts"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Draft"
+                    android:textSize="15sp"
+                    android:textColor="#000000" />
+
+                <!-- Badge -->
+                <TextView
+                    android:id="@+id/draftCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="9"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10sp"
+                    android:background="@drawable/bg_badge" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/sentItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="8dp"
+                android:layout_marginBottom="15dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground">
+
+                <!-- Icon -->
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_marginEnd="12dp"
+                    android:src="@drawable/ic_sent"
+                    android:contentDescription="Inbox Icon" />
+
+                <!-- Label -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Sent"
+                    android:textSize="15sp"
+                    android:textColor="#000000" />
+
+                <!-- Badge -->
+                <TextView
+                    android:id="@+id/sentCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="9"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10sp"
+                    android:background="@drawable/bg_badge" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/delItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="8dp"
+                android:layout_marginBottom="15dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackground">
+
+                <!-- Icon -->
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_marginEnd="12dp"
+                    android:src="@drawable/ic_del"
+                    android:contentDescription="Delete Icon" />
+
+                <!-- Label -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Deleted"
+                    android:textSize="15sp"
+                    android:textColor="#000000" />
+            </LinearLayout>
+
+            <!-- your Favorites, Inbox, Archive, Sent here -->
+            <!-- ... (everything before the button remains inside this) -->
+        </LinearLayout>
+
+        <!-- LOG OUT BUTTON -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/logoutButton"
+            android:layout_width="120dp"
+            android:layout_height="35dp"
+            android:text="Log out"
+            android:textSize="10sp"
+            android:textColor="@color/white"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/button_rounded_corners"/>
+    </RelativeLayout>
+
+</LinearLayout>
