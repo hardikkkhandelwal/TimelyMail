@@ -26,6 +26,25 @@ class InboxFragment : Fragment() {
     private lateinit var adapter: GmailAdapter
     private var emailList: MutableList<GmailMessage> = mutableListOf()
 
+    private var labelId: String = "INBOX" // default
+
+
+
+    companion object {
+        fun newInstance(labelId: String): InboxFragment {
+            val fragment = InboxFragment()
+            val args = Bundle()
+            args.putString("labelId", labelId)
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        labelId = arguments?.getString("labelId") ?: "INBOX"
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -36,16 +55,14 @@ class InboxFragment : Fragment() {
         adapter = GmailAdapter(emailList)
         recyclerView.adapter = adapter
 
-        val token = arguments?.getString("token")
         fetchEmails()
-
         return view
     }
+
     override fun onResume() {
         super.onResume()
-        fetchEmails() // This ensures inbox is updated every time fragment is resumed
+        fetchEmails()
     }
-
 
     fun fetchEmails() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -62,7 +79,9 @@ class InboxFragment : Fragment() {
                     credential
                 ).setApplicationName("TimelyMail").build()
 
+                // 🔑 Fetch emails for this label (Inbox or any)
                 val response = gmailService.users().messages().list("me")
+                    .setLabelIds(listOf(labelId))
                     .setMaxResults(10)
                     .execute()
 
@@ -70,90 +89,65 @@ class InboxFragment : Fragment() {
                 val fetchedEmails = mutableListOf<GmailMessage>()
 
                 for (msg in messages) {
-                    try {
-                        val fullMessage = gmailService.users().messages().get("me", msg.id).execute()
-                        val headers = fullMessage.payload?.headers ?: emptyList()
+                    val fullMessage = gmailService.users().messages().get("me", msg.id).execute()
+                    val headers = fullMessage.payload?.headers ?: emptyList()
 
-                        val subject = headers.firstOrNull { it.name.equals("Subject", true) }?.value ?: "(No Subject)"
-                        val from = headers.firstOrNull { it.name.equals("From", true) }?.value ?: "(No Sender)"
-                        val snippet = fullMessage.snippet ?: "(No Snippet)"
-                        val internalDateMillis = fullMessage.internalDate ?: 0
-                        val date = java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault())
-                            .format(java.util.Date(internalDateMillis))
+                    val subject = headers.firstOrNull { it.name.equals("Subject", true) }?.value ?: "(No Subject)"
+                    val from = headers.firstOrNull { it.name.equals("From", true) }?.value ?: "(No Sender)"
+                    val snippet = fullMessage.snippet ?: "(No Snippet)"
+                    val internalDateMillis = fullMessage.internalDate ?: 0
+                    val date = java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault())
+                        .format(java.util.Date(internalDateMillis))
 
-                        fetchedEmails.add(GmailMessage(subject, from, snippet, date))
-                    } catch (e: Exception) {
-                        Log.e("InboxFragment", "Error parsing message: ${e.message}", e)
-                    }
+                    fetchedEmails.add(GmailMessage(subject, from, snippet, date))
                 }
 
-                // ⬇️ Get email count
-                val inboxCount = gmailService.users().messages()
-                    .list("me")
+                // 📦 Fetch badge counts
+                val inboxCount = gmailService.users().messages().list("me")
                     .setLabelIds(listOf("INBOX"))
                     .setMaxResults(1)
                     .execute()
                     .resultSizeEstimate ?: 0
 
-                // 📦 Accurate archive count logic
                 var archiveCount = 0
                 var pageToken: String? = null
-
                 do {
-                    val response = gmailService.users().messages().list("me")
-                        .setQ("-in:inbox -in:spam -in:trash") // Exclude inbox, spam, trash = archive
+                    val archResponse = gmailService.users().messages().list("me")
+                        .setQ("-in:inbox -in:spam -in:trash")
                         .setMaxResults(100)
                         .setPageToken(pageToken)
                         .execute()
-
-                    archiveCount += response.messages?.size ?: 0
-                    pageToken = response.nextPageToken
+                    archiveCount += archResponse.messages?.size ?: 0
+                    pageToken = archResponse.nextPageToken
                 } while (pageToken != null)
 
-                // 📝 Get Draft Count
-                val draftList = gmailService.users().drafts().list("me").execute()
-                val draftCount = draftList.drafts?.size ?: 0
+                val draftCount = gmailService.users().drafts().list("me").execute().drafts?.size ?: 0
 
-                // 📤 Get Sent Count
-                val query = "after:2024/01/01 from:me"
-                val sentList = gmailService.users().messages().list("me")
+                val sentCount = gmailService.users().messages().list("me")
                     .setLabelIds(listOf("SENT"))
-                    .setQ(query)
                     .execute()
-                val sentCount = sentList.resultSizeEstimate ?: 0
+                    .resultSizeEstimate ?: 0
 
-
-
-
-
+                // ⬇ Update UI on main thread
                 withContext(Dispatchers.Main) {
-                    // Update list
+                    // RecyclerView update
                     emailList.clear()
                     emailList.addAll(fetchedEmails)
                     adapter.notifyDataSetChanged()
 
-                    // ✅ Update badge count with cap
-                    val displayCount = if (inboxCount > 200) "300+" else inboxCount.toString()
+                    // Update badge TextViews
                     val inboxCountTextView = requireActivity().findViewById<TextView>(R.id.inboxCount)
-                    inboxCountTextView.text = displayCount
+                    inboxCountTextView.text = if (inboxCount > 200) "300+" else inboxCount.toString()
 
-                    val archiveDisplay = if (archiveCount > 999) "999+" else archiveCount.toString()
                     val archiveCountTextView = requireActivity().findViewById<TextView>(R.id.archCount)
-                    archiveCountTextView.text = archiveDisplay
+                    archiveCountTextView.text = if (archiveCount > 999) "999+" else archiveCount.toString()
 
-                    // 📝 Update Draft Count UI
-                    val draftDisplay = if (draftCount > 999) "999+" else draftCount.toString()
                     val draftCountTextView = requireActivity().findViewById<TextView>(R.id.draftCount)
-                    draftCountTextView.text = draftDisplay
+                    draftCountTextView.text = if (draftCount > 999) "999+" else draftCount.toString()
 
-                    // 📤 Update Sent Count UI
-                    val sentDisplay = if (sentCount > 999) "999+" else sentCount.toString()
                     val sentCountTextView = requireActivity().findViewById<TextView>(R.id.sentCount)
-                    sentCountTextView.text = sentDisplay
-
-
+                    sentCountTextView.text = if (sentCount > 999) "999+" else sentCount.toString()
                 }
-
 
             } catch (e: Exception) {
                 Log.e("InboxFragment", "Error fetching Gmail: ${e.message}", e)
@@ -161,5 +155,5 @@ class InboxFragment : Fragment() {
         }
     }
 
-
 }
+
