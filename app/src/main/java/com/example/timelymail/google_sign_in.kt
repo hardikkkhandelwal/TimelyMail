@@ -1,12 +1,14 @@
 package com.example.timelymail
 
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ProgressBar
+import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -24,10 +26,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+
 class google_sign_in : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,20 +78,84 @@ class google_sign_in : AppCompatActivity() {
         }
     }
 
+    private var progressAnimator: ValueAnimator? = null
+
     private fun startProgressAnimation(pb1: ProgressBar, pb2: ProgressBar) {
-        val currentProgress = 1000
-        pb1.progress = 0
-        pb2.progress = 0
+        val videoView = findViewById<VideoView>(R.id.centerVideo)
 
-        val anim1 = ObjectAnimator.ofInt(pb1, "progress", currentProgress)
-        anim1.duration = 5000
-        val anim2 = ObjectAnimator.ofInt(pb2, "progress", currentProgress)
-        anim2.duration = 5000
+        // First: pb1 + video1
+        playVideoWithProgress(
+            videoView = videoView,
+            videoResId = R.raw.opening_1,   // first video
+            progressBar = pb1
+        ) {
+            pb1.progress = 0 // reset after finish
 
-        anim1.doOnEnd { anim2.start() }
-        anim2.doOnEnd { startProgressAnimation(pb1, pb2) }
-        anim1.start()
+            // Then pb2 + video2
+            playVideoWithProgress(
+                videoView = videoView,
+                videoResId = R.raw.opening_1,  // second video (change if needed)
+                progressBar = pb2
+            ) {
+                pb2.progress = 0 // reset after finish
+
+                // restart the cycle
+                startProgressAnimation(pb1, pb2)
+            }
+        }
     }
+
+    private fun playVideoWithProgress(
+        videoView: VideoView,
+        videoResId: Int,
+        progressBar: ProgressBar,
+        onEnd: () -> Unit
+    ) {
+        progressAnimator?.cancel()
+        progressBar.progress = 0
+
+        // Get video URI from raw folder
+        val uri = Uri.parse("android.resource://${videoView.context.packageName}/raw/opening_1")
+        videoView.setVideoURI(uri)
+
+
+        videoView.setOnPreparedListener { mp ->
+            val durationMs = mp.duration.coerceAtLeast(1)
+            progressBar.max = durationMs
+            progressBar.progress = 0
+
+            videoView.start()
+
+            // Sync progress bar with playback
+            progressAnimator = ValueAnimator.ofInt(0, durationMs).apply {
+                duration = durationMs.toLong()
+                addUpdateListener { v ->
+                    progressBar.progress = v.animatedValue as Int
+                }
+                start()
+            }
+        }
+
+        // Handle completion
+        videoView.setOnCompletionListener {
+            progressAnimator?.cancel()
+            progressBar.progress = 0
+            onEnd()
+        }
+
+        // Debug errors
+        videoView.setOnErrorListener { _, what, extra ->
+            Log.e("VideoDebug", "Error playing video: what=$what extra=$extra")
+            false
+        }
+    }
+
+
+
+
+
+
+
 
     override fun onStart() {
         super.onStart()

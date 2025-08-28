@@ -91,12 +91,21 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.androidx.core.animation)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+
+    implementation ("com.google.android.material:material:1.12.0")
+
+    implementation ("com.applandeo:material-calendar-view:1.9.0-rc03")
+
+
+
 
 }
 

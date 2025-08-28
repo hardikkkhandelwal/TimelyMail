@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,11 +25,10 @@ class InboxFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: GmailAdapter
+    private lateinit var searchView: SearchView
     private var emailList: MutableList<GmailMessage> = mutableListOf()
 
     private var labelId: String = "INBOX" // default
-
-
 
     companion object {
         fun newInstance(labelId: String): InboxFragment {
@@ -50,10 +50,13 @@ class InboxFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_email_list, container, false)
+
         recyclerView = view.findViewById(R.id.inboxRecyclerView)
+
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         adapter = GmailAdapter(emailList)
         recyclerView.adapter = adapter
+
 
         fetchEmails()
         return view
@@ -79,10 +82,14 @@ class InboxFragment : Fragment() {
                     credential
                 ).setApplicationName("TimelyMail").build()
 
-                // 🔑 Fetch emails for this label (Inbox or any)
+                // 1️⃣ Get label info to fetch real unread count
+                val label = gmailService.users().labels().get("me", labelId).execute()
+                val unreadCount = label.messagesUnread ?: 0
+
+                // 2️⃣ Fetch actual emails (optional: limit to 20 for UI)
                 val response = gmailService.users().messages().list("me")
                     .setLabelIds(listOf(labelId))
-                    .setMaxResults(10)
+                    .setMaxResults(20)
                     .execute()
 
                 val messages = response.messages ?: emptyList()
@@ -102,13 +109,46 @@ class InboxFragment : Fragment() {
                     fetchedEmails.add(GmailMessage(subject, from, snippet, date))
                 }
 
-                // 📦 Fetch badge counts
-                val inboxCount = gmailService.users().messages().list("me")
-                    .setLabelIds(listOf("INBOX"))
-                    .setMaxResults(1)
-                    .execute()
-                    .resultSizeEstimate ?: 0
+                withContext(Dispatchers.Main) {
+                    emailList.clear()
+                    emailList.addAll(fetchedEmails)
+                    adapter.notifyDataSetChanged()
 
+                    // ✅ Update badge with real unread count
+                    updateAllBadges(gmailService)
+                }
+
+            } catch (e: Exception) {
+                Log.e("InboxFragment", "Error fetching Gmail: ${e.message}", e)
+            }
+        }
+    }
+
+
+    fun filterEmails(query: String) {
+        adapter.filter.filter(query)
+    }
+
+    private fun updateBadge(unreadCount: Int) {
+        val badge = activity?.findViewById<TextView>(R.id.notificationBadge)
+        badge?.let {
+            if (unreadCount > 0) {
+                it.visibility = View.VISIBLE
+                it.text = if (unreadCount > 99) "99+" else unreadCount.toString()
+            } else {
+                it.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun updateAllBadges(gmailService: Gmail) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // INBOX unread count
+                val inboxLabel = gmailService.users().labels().get("me", "INBOX").execute()
+                val inboxCount = inboxLabel.messagesUnread ?: 0
+
+                // ARCHIVE count
                 var archiveCount = 0
                 var pageToken: String? = null
                 do {
@@ -121,39 +161,40 @@ class InboxFragment : Fragment() {
                     pageToken = archResponse.nextPageToken
                 } while (pageToken != null)
 
+                // DRAFT count
                 val draftCount = gmailService.users().drafts().list("me").execute().drafts?.size ?: 0
 
+                // SENT count
                 val sentCount = gmailService.users().messages().list("me")
                     .setLabelIds(listOf("SENT"))
                     .execute()
                     .resultSizeEstimate ?: 0
 
-                // ⬇ Update UI on main thread
                 withContext(Dispatchers.Main) {
-                    // RecyclerView update
-                    emailList.clear()
-                    emailList.addAll(fetchedEmails)
-                    adapter.notifyDataSetChanged()
+                    // 🔹 Update main notification badge
+                    updateBadge(inboxCount)
 
-                    // Update badge TextViews
                     val inboxCountTextView = requireActivity().findViewById<TextView>(R.id.inboxCount)
                     inboxCountTextView.text = if (inboxCount > 200) "300+" else inboxCount.toString()
 
-                    val archiveCountTextView = requireActivity().findViewById<TextView>(R.id.archCount)
-                    archiveCountTextView.text = if (archiveCount > 999) "999+" else archiveCount.toString()
+                    // ARCHIVE badge
+                    val archiveBadge = activity?.findViewById<TextView>(R.id.archCount)
+                    archiveBadge?.text = if (archiveCount > 999) "999+" else archiveCount.toString()
 
-                    val draftCountTextView = requireActivity().findViewById<TextView>(R.id.draftCount)
-                    draftCountTextView.text = if (draftCount > 999) "999+" else draftCount.toString()
+                    // DRAFT badge
+                    val draftBadge = activity?.findViewById<TextView>(R.id.draftCount)
+                    draftBadge?.text = if (draftCount > 999) "999+" else draftCount.toString()
 
-                    val sentCountTextView = requireActivity().findViewById<TextView>(R.id.sentCount)
-                    sentCountTextView.text = if (sentCount > 999) "999+" else sentCount.toString()
+                    // SENT badge
+                    val sentBadge = activity?.findViewById<TextView>(R.id.sentCount)
+                    sentBadge?.text = if (sentCount > 999) "999+" else sentCount.toString()
                 }
 
             } catch (e: Exception) {
-                Log.e("InboxFragment", "Error fetching Gmail: ${e.message}", e)
+                Log.e("InboxFragment", "Error updating badges: ${e.message}", e)
             }
         }
     }
 
-}
 
+}

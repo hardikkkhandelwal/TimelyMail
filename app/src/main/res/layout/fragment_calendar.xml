@@ -1,67 +1,80 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".CalendarFragment">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp">
+        android:fillViewport="true">
 
-        <CalendarView
-            android:id="@+id/calendarView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <!-- Event Card -->
         <LinearLayout
-            android:id="@+id/eventCard"
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@android:drawable/dialog_holo_light_frame"
-            android:padding="12dp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone">
+            android:padding="16dp">
 
-            <TextView
-                android:id="@+id/eventDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📅 17 Aug 2025"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="@android:color/holo_blue_dark" />
-
-            <TextView
-                android:id="@+id/eventTitle"
+            <com.applandeo.materialcalendarview.CalendarView
+                android:id="@+id/calendarView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Events for this date:"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_marginTop="4dp"
-                android:textColor="@android:color/black" />
+                app:type="one_day_picker"
+                app:firstDayOfWeek="monday"
+                app:eventsEnabled="true"
+                app:headerColor="@color/teal_700"
+                app:headerLabelColor="@android:color/white"
+                app:abbreviationsBarColor="@color/teal_200"
+                app:abbreviationsLabelsColor="@android:color/black"
+                app:selectionColor="@color/purple_200"
+                app:todayLabelColor="@android:color/holo_blue_light" />
 
-            <!-- Container for multiple events -->
+            <!-- Event Card -->
             <LinearLayout
-                android:id="@+id/eventListContainer"
+                android:id="@+id/eventCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="4dp" />
+                android:background="@android:drawable/dialog_holo_light_frame"
+                android:padding="12dp"
+                android:layout_marginTop="8dp"
+                android:visibility="visible">
 
+                <TextView
+                    android:id="@+id/eventDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📅 17 Aug 2025"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/holo_blue_dark" />
+
+                <TextView
+                    android:id="@+id/eventTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Events for this date:"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@android:color/black" />
+
+                <LinearLayout
+                    android:id="@+id/eventListContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/addEventButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add Event"
+                android:layout_marginTop="8dp"/>
         </LinearLayout>
-
-        <Button
-            android:id="@+id/addEventButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add Event"
-            android:layout_marginTop="8dp"/>
-
-    </LinearLayout>
+    </ScrollView>
 </FrameLayout>

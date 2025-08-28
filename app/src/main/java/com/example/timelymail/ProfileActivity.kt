@@ -16,7 +16,10 @@
     import android.widget.ImageView
     import android.widget.LinearLayout
     import android.widget.PopupWindow
+    import android.widget.SearchView
     import android.widget.Toast
+    import androidx.appcompat.app.AppCompatDelegate
+    import androidx.core.content.ContextCompat
     import androidx.core.view.GravityCompat
     import androidx.drawerlayout.widget.DrawerLayout
     import androidx.lifecycle.lifecycleScope
@@ -30,14 +33,36 @@
     import kotlinx.coroutines.Dispatchers
     import kotlinx.coroutines.launch
     import kotlinx.coroutines.withContext
+    import com.google.android.material.badge.BadgeDrawable
+    import com.google.android.material.badge.BadgeUtils
+    import androidx.core.view.ViewCompat
 
 
     class ProfileActivity : AppCompatActivity() {
+
+
+        //APPLICATION MODE
+        private fun loadNightModePref() {
+            val prefs = getSharedPreferences("settings", MODE_PRIVATE)
+            val isDarkMode = prefs.getBoolean("dark_mode", false)
+            AppCompatDelegate.setDefaultNightMode(
+                if (isDarkMode)
+                    AppCompatDelegate.MODE_NIGHT_YES
+                else
+                    AppCompatDelegate.MODE_NIGHT_NO
+            )
+        }
+
+
         private var activeNavItem: LinearLayout? = null
         private lateinit var auth: FirebaseAuth
         override fun onCreate(savedInstanceState: Bundle?) {
+            // ⚡ Load saved dark mode before creating UI
+            loadNightModePref()
+
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_profile_activty)
+
 
             auth = FirebaseAuth.getInstance()
 
@@ -50,7 +75,16 @@
             val searchIcon = findViewById<ImageButton>(R.id.searchIcon)
             val toolbarTitle = findViewById<TextView>(R.id.toolbarTitle)
 
-    // 👇 load default fragment first
+            val settingsIcon = findViewById<ImageView>(R.id.settingsIcon)
+            settingsIcon.setOnClickListener {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
+            }
+
+
+
+
+            // 👇 load default fragment first
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, InboxFragment.newInstance("INBOX"))
                 .commit()
@@ -143,6 +177,37 @@
                     .commit()
             }
 
+            val searchViewToolbar = findViewById<SearchView>(R.id.searchViewToolbar)
+
+// Handle search icon click
+            searchIcon.setOnClickListener {
+                // Toggle visibility
+                if (searchViewToolbar.visibility == View.GONE) {
+                    searchViewToolbar.visibility = View.VISIBLE
+                    searchViewToolbar.isIconified = false
+                    searchViewToolbar.requestFocus()
+                } else {
+                    searchViewToolbar.visibility = View.GONE
+                }
+            }
+
+
+// Handle search queries
+            searchViewToolbar.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? InboxFragment
+                    fragment?.filterEmails(query ?: "")
+                    return true
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container) as? InboxFragment
+                    fragment?.filterEmails(newText ?: "")
+                    return true
+                }
+            })
+
+
 
 
 
@@ -182,13 +247,19 @@
                 drawerLayout.openDrawer(GravityCompat.START)
             }
 
-    // Handle search icon click
-            searchIcon.setOnClickListener {
-                // TODO: Implement search functionality
-                Toast.makeText(this, "Search clicked", Toast.LENGTH_SHORT).show()
+            val badge = findViewById<TextView>(R.id.notificationBadge)
+
+// Example: set unread count
+            val unreadCount = 7
+            if (unreadCount > 0) {
+                badge.visibility = View.VISIBLE
+                badge.text = if (unreadCount > 99) "99+" else unreadCount.toString()
+            } else {
+                badge.visibility = View.GONE
             }
 
-    // Handle notification icon click
+
+            // Handle notification icon click
             notifyIcon.setOnClickListener {
                 // TODO: Show notifications
                 Toast.makeText(this, "Notifications clicked", Toast.LENGTH_SHORT).show()
@@ -210,19 +281,14 @@
                 showAccountPopup(it)
             }
 
+            val helpIcon = findViewById<ImageView>(R.id.helpIcon)
+            helpIcon.setOnClickListener {
+                val url = "https://hardikkkhandelwal.github.io/Portfolio_Pro/"
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(url)
+                startActivity(intent)
+            }
 
-
-            // Sidebar item selection
-    //        navView.setNavigationItemSelectedListener {
-    //            when (it.itemId) {
-    //                R.id.nav_profile -> { /* already here */ }
-    //                R.id.nav_logout -> logout()
-    //                R.id.nav_gmail -> {
-    //                    // TODO: Add Gmail-related activity or fragment
-    //                }
-    //            }
-    //            true
-    //        }
 
 
             // Bottom navigation
